@@ -1,0 +1,40 @@
+# ########################## # 
+#                            #
+#   GoldToCash Plugin YAML   #
+#                            #
+#   No configuration here !  #
+#                            #
+# ########################## #
+#                            #
+#  You can change 'default'  #
+#      in 'permissions'      #
+#    if you don't have a     #
+#     permission plugin.     #
+#                            #
+# ########################## #
+
+name: GoldToCash
+main: com.skyost.server.GoldToCashPlugin
+description: Convert ingots into dollars.
+version: 1.6
+depends: Vault
+author: Skyost
+website: http://dev.bukkit.org/bukkit-plugins/goldtocash
+commands:
+ goldtocash:
+  aliases: [gold2cash, g2c]
+  description: Convert ingots in hand to dollars.
+  usage: Simply type /goldtocash, gold2cash or /g2c to convert all ingots in your hand to dollars !
+  permission: goldtodcash.convert
+ goldtocashconfig:
+  aliases: [gold2cashconfig, g2cconfig, g2cc]
+  description: Configure GoldToCash directly in the game.
+  usage: Simply type /goldtocashconfig, gold2cashconfig, g2cconfig or g2cc <ConfigID> <Value> to configure your installation of GoldToCash !
+  permission: goldtocash.config
+permissions:
+ goldtocash.convert:
+  default: true
+  description: Allow you to convert ingots in hand to dollars.
+ goldtocash.config:
+  default: op
+  description: Allow you to configure GoldToCash.
