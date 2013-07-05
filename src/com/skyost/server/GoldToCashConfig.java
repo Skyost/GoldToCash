@@ -14,7 +14,7 @@ public class GoldToCashConfig extends Config {
 	}
 	public boolean AutoCheckForUpdates = true;
 	public String ConversionMethod = "COMMAND SIGN";
-	public String SignHeader = "[GoldToCash]";
+	public String SignHeaderGoldToCash = "[GoldToCash]";
 	public double IronIngotPrice = 250.0;
 	public double GoldIngotPrice = 500.0;
 	public double DiamondPrice = 750.0;

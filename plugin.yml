@@ -23,18 +23,37 @@ website: http://dev.bukkit.org/bukkit-plugins/goldtocash
 commands:
  goldtocash:
   aliases: [gold2cash, g2c]
-  description: Convert ingots in hand to dollars.
-  usage: Simply type /goldtocash, gold2cash or /g2c to convert all ingots in your hand to dollars !
-  permission: goldtodcash.convert
+  description: Convert ingots in hand to cash.
+  usage: Simply type /goldtocash, gold2cash or /g2c to convert all ingots in your hand to cash !
+  permission: goldtocash.convert.goldtocash
+ cashtogold:
+  aliases: [cash2gold, c2g]
+  description: Convert cash you have in iron ingot, gold ingot, diamond or emerald.
+  usage: Simply type /cashtogold, cash2gold or /c2g <Item> to convert all your cash in iron ingot, gold ingot, diamond or emerald.
+  permission: goldtocash.convert.cashtogold
  goldtocashconfig:
   aliases: [gold2cashconfig, g2cconfig, g2cc]
   description: Configure GoldToCash directly in the game.
   usage: Simply type /goldtocashconfig, gold2cashconfig, g2cconfig or g2cc <ConfigID> <Value> to configure your installation of GoldToCash !
   permission: goldtocash.config
 permissions:
- goldtocash.convert:
+ goldtocash.*:
+  description: Give access to alls GoldToCash commands.
+  children:
+   goldtocash.convert.goldtocash: true
+   goldtocash.convert.cashtogold: true
+   goldtocash.config: true
+ goldtocash.convert.*:
+  description: Give access to alls GoldToCash convert commands.
+  children:
+   goldtocash.convert.goldtocash: true
+   goldtocash.convert.cashtogold: true
+ goldtocash.convert.goldtocash:
   default: true
-  description: Allow you to convert ingots in hand to dollars.
+  description: Allow you to convert ingots in hand to cash.
+ goldtocash.convert.cashtogold:
+  default: true
+  description: Allow you to convert ingots in hand to cash.
  goldtocash.config:
   default: op
   description: Allow you to configure GoldToCash.
