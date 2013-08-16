@@ -24,7 +24,7 @@ public class GoldToCashMessages extends Config {
 	public String Message_ConvertMoney = "Can't convert /moneyname/ to this unknown item id !";
 	public String Message_ConfigChanged = "'/arg1/' set to '/arg2/' !";
 	public String Message_ConfigAdded = "'/arg2/' added to '/arg1/' !";
-	public String Message_Price = "The price of item id /item/ is /price/.";
+	public String Message_Price = "The price of item id /item/ is /price/ /moneyname/.";
 	public String Message_NoEconomy = "Economy was not detected / not enabled on this server !";
 	public String Message_NotEnoughtMoney = "You don't have enough money to convert your money into this item ! Check /price <ID> for the price of this item.";
 	public String Message_Arguments = "Incorrects aguments !";
