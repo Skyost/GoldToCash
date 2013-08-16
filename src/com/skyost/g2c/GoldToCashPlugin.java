@@ -36,7 +36,7 @@
  * -------------------------------------------------------------------------------------------------------- *
  */
 
-package com.skyost.server;
+package com.skyost.g2c;
 
 import java.io.File;
 import java.io.FileWriter;
@@ -67,7 +67,8 @@ import org.bukkit.plugin.RegisteredServiceProvider;
 import org.bukkit.plugin.java.JavaPlugin;
 
 import net.milkbowl.vault.economy.Economy;
-import com.skyost.server.Metrics.Graph;
+
+import com.skyost.g2c.Metrics.Graph;
 
 public class GoldToCashPlugin extends JavaPlugin implements Listener {
 	public GoldToCashConfig config;
@@ -76,11 +77,7 @@ public class GoldToCashPlugin extends JavaPlugin implements Listener {
 	public static Economy economy = null;
 	public static Date actual = new Date();
 	public static DateFormat dateFormat = new SimpleDateFormat("MM-dd-yyyy HH:mm:ss");
-	ItemStack emerald = new ItemStack(Material.EMERALD);
-	ItemStack diamond = new ItemStack(Material.DIAMOND);
-	ItemStack goldIngot = new ItemStack(Material.GOLD_INGOT);
-	ItemStack ironIngot = new ItemStack(Material.IRON_INGOT);
-	ItemStack air = new ItemStack(Material.AIR);
+	public ItemStack air = new ItemStack(Material.AIR);
 	
 	public void onEnable() {
 		logToFile("[" + date() + "] [CONSOLE] Enabling GoldToCash v" + this.getDescription().getVersion() + "...");
@@ -119,11 +116,6 @@ public class GoldToCashPlugin extends JavaPlugin implements Listener {
 			messages = new GoldToCashMessages(this);
 			messages.init();
 			logToFile("[" + date() + "] [CONSOLE] Messages file loaded with success !");
-			if(!(config.EmeraldPrice > 0 || config.DiamondPrice > 0 || config.GoldIngotPrice > 0 || config.IronIngotPrice > 0)) {
-				getLogger().log(Level.SEVERE, "[GoldToCash] Prices must be superior to zero ! We will disable the plugin so you can edit the values and reload it.");
-				logToFile("[" + date() + "] [CONSOLE] Prices must be superior to zero ! We will disable the plugin so you can edit the values and reload it.");
-				getServer().getPluginManager().disablePlugin(this);
-			}
 			if(!(config.ConversionMethod.toUpperCase().contains("COMMAND") || config.ConversionMethod.toUpperCase().contains("SIGN"))) {
 				getLogger().log(Level.SEVERE, "[GoldToCash] 'ConversionMethod' in config must have at least 'COMMAND' and / or 'SIGN' ! We will disable the plugin so you can edit the values and reload it.");
 				logToFile("[" + date() + "] [CONSOLE] 'ConversionMethod' in config must have at least 'COMMAND' and / or 'SIGN' ! We will disable the plugin so you can edit the values and reload it.");
@@ -154,35 +146,20 @@ public class GoldToCashPlugin extends JavaPlugin implements Listener {
         return economy != null;
 	}
 	
+	@SuppressWarnings("incomplete-switch")
 	private void checkUpdate(CommandSender sender) {
 		try {
 			logToFile("[" + date() + "] [" + sender.getName() + "] Checking for updates...");
 			Updater updater = new Updater(this, "goldtocash", this.getFile(), Updater.UpdateType.NO_DOWNLOAD, false);
 			Updater.UpdateResult result = updater.getResult();
 	        switch(result) {
-	            case SUCCESS:
-		            sender.sendMessage(ChatColor.GREEN + "[GoldToCash] " + messages.Update_SUCCESS);
-		            logToFile("[" + date() + "] [" + sender.getName() + "] " + messages.Update_SUCCESS);
-	            	break;
 	            case NO_UPDATE:
 	            	sender.sendMessage(ChatColor.GREEN + "[GoldToCash] " + messages.Update_NOUPDATE);
 	            	logToFile("[" + date() + "] [" + sender.getName() + "] " + messages.Update_NOUPDATE);
 	            	break;
-	            case FAIL_DOWNLOAD:
-	            	sender.sendMessage(ChatColor.RED + "[GoldToCash] " + messages.Update_FAILDOWNLOAD);
-	            	logToFile("[" + date() + "] [" + sender.getName() + "] " + messages.Update_FAILDOWNLOAD);
-	            	break;
 	            case FAIL_DBO:
 	            	sender.sendMessage(ChatColor.RED + "[GoldToCash] " + messages.Update_FAILDBO);
 	            	logToFile("[" + date() + "] [" + sender.getName() + "] " + messages.Update_FAILDBO);
-	            	break;
-	            case FAIL_NOVERSION:
-	            	sender.sendMessage(ChatColor.RED + "[GoldToCash] " + messages.Update_FAILNOVERSION);
-	            	logToFile("[" + date() + "] [" + sender.getName() + "] " + messages.Update_FAILNOVERSION);
-	            	break;
-	            case FAIL_BADSLUG:
-	            	sender.sendMessage(ChatColor.RED + "[GoldToCash] " + messages.Update_FAILBADSLUG);
-	            	logToFile("[" + date() + "] [" + sender.getName() + "] " + messages.Update_FAILBADSLUG);
 	            	break;
 	            case UPDATE_AVAILABLE:
 	            	String message = messages.Update_AVAILABLE.replaceAll("/version/", updater.getLatestVersionString());
@@ -195,10 +172,6 @@ public class GoldToCashPlugin extends JavaPlugin implements Listener {
 			getLogger().log(Level.SEVERE, "[ERROR] " + ex);
 			logToFile("[" + date() + "] [CONSOLE] " + ex);
 		}
-	}
-	
-	public void sendMail() {
-		
 	}
 	
 	public void startMetrics() {
@@ -271,58 +244,6 @@ public class GoldToCashPlugin extends JavaPlugin implements Listener {
     				return config.SignHeaderGoldToCash;
     			}
     		});
-    		
-    		Graph ironIngotPriceGraph = metrics.createGraph("IronIngotPriceGraph");
-    		ironIngotPriceGraph.addPlotter(new Metrics.Plotter("Iron Ingot Price") {	
-    			@Override
-    			public int getValue() {	
-    				return 1;
-    			}
-    			
-    			@Override
-    			public String getColumnName() {
-    				return "" + config.IronIngotPrice;
-    			}
-    		});
-    		
-    		Graph goldIngotPriceGraph = metrics.createGraph("GoldIngotPriceGraph");
-    		goldIngotPriceGraph.addPlotter(new Metrics.Plotter("Gold Ingot Price") {	
-    			@Override
-    			public int getValue() {	
-    				return 1;
-    			}
-    			
-    			@Override
-    			public String getColumnName() {
-    				return "" + config.GoldIngotPrice;
-    			}
-    		});
-    		
-    		Graph diamondPriceGraph = metrics.createGraph("DiamondPriceGraph");
-    		diamondPriceGraph.addPlotter(new Metrics.Plotter("Diamond Price") {	
-    			@Override
-    			public int getValue() {	
-    				return 1;
-    			}
-    			
-    			@Override
-    			public String getColumnName() {
-    				return "" + config.DiamondPrice;
-    			}
-    		});
-    		
-    		Graph emeraldPriceGraph = metrics.createGraph("EmeraldPriceGraph");
-    		emeraldPriceGraph.addPlotter(new Metrics.Plotter("Emerald Price") {	
-    			@Override
-    			public int getValue() {	
-    				return 1;
-    			}
-    			
-    			@Override
-    			public String getColumnName() {
-    				return "" + config.EmeraldPrice;
-    			}
-    		});
 		    metrics.start();
 		    logToFile("[" + date() + "] [CONSOLE] Metrics started with success !");
 		}
@@ -376,91 +297,25 @@ public class GoldToCashPlugin extends JavaPlugin implements Listener {
     public void convertToCash(Player player, ItemStack inHand) {
     	if(economy.isEnabled() == true) {
             if(player.hasPermission("goldtocash.convert.goldtocash")) {
-            	if(inHand.isSimilar(emerald)) {
-            		if(economy.hasAccount(player.getName()) == false) {
-            			economy.createPlayerAccount(player.getName());
-            		}
-            		double ecoAdd = config.EmeraldPrice * inHand.getAmount();
-            		economy.depositPlayer(player.getName(), ecoAdd);
-            		totalCashConverted = totalCashConverted + ecoAdd;
-            		player.setItemInHand(air);
-            		String moneyName;
-            		if(ecoAdd >= 1 && ecoAdd < 2) {
-            			moneyName = economy.currencyNameSingular();
-            		}
-            		else {
-            			moneyName = economy.currencyNamePlural();
-            		}
-            		String message = messages.Message_MoneyAdded.replaceAll("/money/", "" + ecoAdd);
-            		message = message.replaceAll("/moneyname/", moneyName);
-            		player.sendMessage(message);
-            		logToFile("[" + date() + "] [" + player.getName() + "] " + message);
-            	}
-            	else if(inHand.isSimilar(diamond)) {
-            		if(economy.hasAccount(player.getName()) == false) {
-            			economy.createPlayerAccount(player.getName());
-            		}
-            		double ecoAdd = config.DiamondPrice * inHand.getAmount();
-            		economy.depositPlayer(player.getName(), ecoAdd);
-            		totalCashConverted = totalCashConverted + ecoAdd;
-            		player.setItemInHand(air);
-            		String moneyName;
-            		if(ecoAdd >= 1 && ecoAdd < 2) {
-            			moneyName = economy.currencyNameSingular();
-            		}
-            		else {
-            			moneyName = economy.currencyNamePlural();
-            		}
-            		String message = messages.Message_MoneyAdded.replaceAll("/money/", "" + ecoAdd);
-            		message = message.replaceAll("/moneyname/", moneyName);
-            		player.sendMessage(message);
-            		logToFile("[" + date() + "] [" + player.getName() + "] " + message);
-            	}
-            	else if(inHand.isSimilar(goldIngot)) {
-            		if(economy.hasAccount(player.getName()) == false) {
-            			economy.createPlayerAccount(player.getName());
-            		}
-            		double ecoAdd = config.GoldIngotPrice * inHand.getAmount();
-            		economy.depositPlayer(player.getName(), ecoAdd);
-            		totalCashConverted = totalCashConverted + ecoAdd;
-            		player.setItemInHand(air);
-            		String moneyName;
-            		if(ecoAdd >= 1 && ecoAdd < 2) {
-            			moneyName = economy.currencyNameSingular();
-            		}
-            		else {
-            			moneyName = economy.currencyNamePlural();
-            		}
-            		String message = messages.Message_MoneyAdded.replaceAll("/money/", "" + ecoAdd);
-            		message = message.replaceAll("/moneyname/", moneyName);
-            		player.sendMessage(message);
-            		logToFile("[" + date() + "] [" + player.getName() + "] " + message);
-            	}
-            	else if(inHand.isSimilar(ironIngot)) {
-            		if(economy.hasAccount(player.getName()) == false) {
-            			economy.createPlayerAccount(player.getName());
-            		}
-            		double ecoAdd = config.IronIngotPrice * inHand.getAmount();
-            		economy.depositPlayer(player.getName(), ecoAdd);
-            		totalCashConverted = totalCashConverted + ecoAdd;
-            		player.setItemInHand(air);
-            		String moneyName;
-            		if(ecoAdd >= 1 && ecoAdd < 2) {
-            			moneyName = economy.currencyNameSingular();
-            		}
-            		else {
-            			moneyName = economy.currencyNamePlural();
-            		}
-            		String message = messages.Message_MoneyAdded.replaceAll("/money/", "" + ecoAdd);
-            		message = message.replaceAll("/moneyname/", moneyName);
-            		player.sendMessage(message);
-            		logToFile("[" + date() + "] [" + player.getName() + "] " + message);
-            	}
-            	else {
-            		String message = messages.Message_ConvertItem.replaceAll("/moneyname/", economy.currencyNamePlural());
-            		player.sendMessage(ChatColor.RED + message);
-    				logToFile("[" + date() + "] [" + player.getName() + "] " + message);
-            	}
+        		if(economy.hasAccount(player.getName()) == false) {
+        			economy.createPlayerAccount(player.getName());
+        		}
+            	Double result = config.Prices.get("" + inHand.getTypeId());
+            	double ecoAdd = result * inHand.getAmount();
+        		economy.depositPlayer(player.getName(), ecoAdd);
+        		totalCashConverted = totalCashConverted + ecoAdd;
+        		player.setItemInHand(air);
+        		String moneyName;
+        		if(ecoAdd >= 1 && ecoAdd < 2) {
+        			moneyName = economy.currencyNameSingular();
+        		}
+        		else {
+        			moneyName = economy.currencyNamePlural();
+        		}
+        		String message = messages.Message_MoneyAdded.replaceAll("/money/", "" + ecoAdd);
+        		message = message.replaceAll("/moneyname/", moneyName);
+        		player.sendMessage(message);
+        		logToFile("[" + date() + "] [" + player.getName() + "] " + message);
             }
             else {
             	player.sendMessage(ChatColor.RED + messages.Message_Permission);
@@ -475,128 +330,34 @@ public class GoldToCashPlugin extends JavaPlugin implements Listener {
     
     public void convertToGold(Player player, ItemStack toConvert) {
     	if(economy.isEnabled() == true) {
-            if(player.hasPermission("goldtocash.convert.goldtocash")) {
-		    	if(toConvert.isSimilar(emerald)) {
-		    		if(economy.hasAccount(player.getName()) == false) {
-		    			economy.createPlayerAccount(player.getName());
-		    		}
-		    		double ecoSub = economy.getBalance(player.getName()) / config.EmeraldPrice;
-		    		economy.withdrawPlayer(player.getName(), config.EmeraldPrice * ecoSub);
-		    		ItemStack toGive = emerald;
-		    		toGive.setAmount(round(ecoSub));
-		    		player.getInventory().addItem(toGive);
+            if(player.hasPermission("goldtocash.convert.cashtogold")) {
+            	Double result = config.Prices.get("" + toConvert.getTypeId());
+            	if(economy.getBalance(player.getName()) < result) {
+            		player.sendMessage(ChatColor.RED + messages.Message_NotEnoughtMoney);
+            		logToFile("[" + date() + "] [" + player.getName() + "] " + messages.Message_NotEnoughtMoney);
+            	}
+            	else {
+                	if(economy.hasAccount(player.getName()) == false) {
+            			economy.createPlayerAccount(player.getName());
+            		}
+	            	double ecoSub = economy.getBalance(player.getName()) / result;
+	            	economy.withdrawPlayer(player.getName(),result * ecoSub);
+	            	ItemStack toGive = new ItemStack(toConvert.getTypeId());
+	            	toGive.setAmount(round(ecoSub));
+	            	player.getInventory().addItem(toGive);
 		    		String moneyName;
-		    		String itemName;
 		    		if(ecoSub >= 1 && ecoSub < 2) {
 		    			moneyName = economy.currencyNameSingular();
 		    		}
 		    		else {
 		    			moneyName = economy.currencyNamePlural();
 		    		}
-		    		if(toGive.getAmount() == 1) {
-		    			itemName = "Emerald";
-		    		}
-		    		else {
-		    			itemName = "Emeralds";
-		    		}
-		    		String message = messages.Message_ItemAdded.replaceAll("/money/", "" + config.EmeraldPrice * ecoSub);
+		    		String message = messages.Message_ItemAdded.replaceAll("/money/", "" + result * ecoSub);
 		    		message = message.replaceAll("/moneyname/", moneyName);
-		    		message = message.replaceAll("/item/", itemName);
+		    		message = message.replaceAll("/item/", "" + toConvert.getTypeId());
 		    		player.sendMessage(message);
 		    		logToFile("[" + date() + "] [" + player.getName() + "] " + message);
-		    	}
-		    	else if(toConvert.isSimilar(diamond)) {
-		    		if(economy.hasAccount(player.getName()) == false) {
-		    			economy.createPlayerAccount(player.getName());
-		    		}
-		    		double ecoSub = economy.getBalance(player.getName()) / config.DiamondPrice;
-		    		economy.withdrawPlayer(player.getName(), config.DiamondPrice * ecoSub);
-		    		ItemStack toGive = diamond;
-		    		toGive.setAmount(round(ecoSub));
-		    		player.getInventory().addItem(toGive);
-		    		String moneyName;
-		    		String itemName;
-		    		if(ecoSub >= 1 && ecoSub < 2) {
-		    			moneyName = economy.currencyNameSingular();
-		    		}
-		    		else {
-		    			moneyName = economy.currencyNamePlural();
-		    		}
-		    		if(toGive.getAmount() == 1) {
-		    			itemName = "Diamond";
-		    		}
-		    		else {
-		    			itemName = "Diamonds";
-		    		}
-		    		String message = messages.Message_ItemAdded.replaceAll("/money/", "" + config.DiamondPrice * ecoSub);
-		    		message = message.replaceAll("/moneyname/", moneyName);
-		    		message = message.replaceAll("/item/", itemName);
-		    		player.sendMessage(message);
-		    		logToFile("[" + date() + "] [" + player.getName() + "] " + message);
-		    	}
-		    	else if(toConvert.isSimilar(goldIngot)) {
-		    		if(economy.hasAccount(player.getName()) == false) {
-		    			economy.createPlayerAccount(player.getName());
-		    		}
-		    		double ecoSub = economy.getBalance(player.getName()) / config.GoldIngotPrice;
-		    		economy.withdrawPlayer(player.getName(), config.GoldIngotPrice * ecoSub);
-		    		ItemStack toGive = goldIngot;
-		    		toGive.setAmount(round(ecoSub));
-		    		player.getInventory().addItem(toGive);
-		    		String moneyName;
-		    		String itemName;
-		    		if(ecoSub >= 1 && ecoSub < 2) {
-		    			moneyName = economy.currencyNameSingular();
-		    		}
-		    		else {
-		    			moneyName = economy.currencyNamePlural();
-		    		}
-		    		if(toGive.getAmount() == 1) {
-		    			itemName = "Gold Ingot";
-		    		}
-		    		else {
-		    			itemName = "Gold Ingots";
-		    		}
-		    		String message = messages.Message_ItemAdded.replaceAll("/money/", "" + config.GoldIngotPrice * ecoSub);
-		    		message = message.replaceAll("/moneyname/", moneyName);
-		    		message = message.replaceAll("/item/", itemName);
-		    		player.sendMessage(message);
-		    		logToFile("[" + date() + "] [" + player.getName() + "] " + message);
-		    	}
-		    	else if(toConvert.isSimilar(ironIngot)) {
-		    		if(economy.hasAccount(player.getName()) == false) {
-		    			economy.createPlayerAccount(player.getName());
-		    		}
-		    		double ecoSub = economy.getBalance(player.getName()) / config.IronIngotPrice;
-		    		economy.withdrawPlayer(player.getName(), config.IronIngotPrice * ecoSub);
-		    		ItemStack toGive = ironIngot;
-		    		toGive.setAmount(round(ecoSub));
-		    		player.getInventory().addItem(toGive);
-		    		String moneyName;
-		    		String itemName;
-		    		if(ecoSub >= 1 && ecoSub < 2) {
-		    			moneyName = economy.currencyNameSingular();
-		    		}
-		    		else {
-		    			moneyName = economy.currencyNamePlural();
-		    		}
-		    		if(toGive.getAmount() == 1) {
-		    			itemName = "Iron Ingot";
-		    		}
-		    		else {
-		    			itemName = "Iron Ingots";
-		    		}
-		    		String message = messages.Message_ItemAdded.replaceAll("/money/", "" + config.IronIngotPrice * ecoSub);
-		    		message = message.replaceAll("/moneyname/", moneyName);
-		    		message = message.replaceAll("/item/", itemName);
-		    		player.sendMessage(message);
-		    		logToFile("[" + date() + "] [" + player.getName() + "] " + message);
-		    	}
-		    	else {
-		    		String message = messages.Message_ConvertMoney.replaceAll("/moneyname/", economy.currencyNamePlural());
-            		player.sendMessage(ChatColor.RED + message);
-    				logToFile("[" + date() + "] [" + player.getName() + "] " + message);
-		    	}
+            	}
             }
             else {
             	player.sendMessage(ChatColor.RED + messages.Message_Permission);
@@ -630,6 +391,23 @@ public class GoldToCashPlugin extends JavaPlugin implements Listener {
 				logToFile("[" + date() + "] [" + sender.getName() + "] " + messages.Message_Arguments);
     		}
 		}
+    	else if(arg1.equalsIgnoreCase("Prices")) {
+    		try {
+	    		String[] str = arguments.split(":");
+	    		String one = str[0].substring(7);
+	    		String two = str[1];
+    			Integer.parseInt(one);
+    			config.Prices.put(one, Double.parseDouble(two));
+        		String message = messages.Message_ConfigAdded.replaceAll("/arg1/", "Prices");
+        		message = message.replaceAll("/arg2/", one + ":" + two);
+    			sender.sendMessage(message);
+    			logToFile("[" + date() + "] [" + sender.getName() + "] " + message);
+    		}
+    		catch(Exception ex) {
+    			sender.sendMessage(ChatColor.RED + messages.Message_Arguments);
+				logToFile("[" + date() + "] [" + sender.getName() + "] " + messages.Message_Arguments);
+    		}
+    	}
     	else if(arg1.equalsIgnoreCase("ConversionMethod")) {
     		if(arguments.toUpperCase().contains("COMMAND") || arguments.toUpperCase().contains("SIGN")) {
     			arguments = arguments.toUpperCase();
@@ -653,86 +431,6 @@ public class GoldToCashPlugin extends JavaPlugin implements Listener {
 			sender.sendMessage(message);
 			logToFile("[" + date() + "] [" + sender.getName() + "] " + message);
     	}
-    	else if(arg1.equalsIgnoreCase("IronIngotPrice")) {
-    		try {
-    			arg2 = arg2.replaceAll(",", ".");
-    			if(Double.parseDouble(arg2) > 0) {
-        			config.IronIngotPrice = Double.parseDouble(arg2);
-    				String message = messages.Message_ConfigChanged.replaceAll("/arg1/", "IronIngotPrice");
-    				message = message.replaceAll("/arg2/", arg2);
-    				sender.sendMessage(message);
-    				logToFile("[" + date() + "] [" + sender.getName() + "] " + message);
-    			}
-    			else {
-    				sender.sendMessage(ChatColor.RED + messages.Message_Arguments);
-        			logToFile("[" + date() + "] [" + sender.getName() + "] " + messages.Message_Arguments);
-    			}
-    		}
-    		catch(Exception ex) {
-    			sender.sendMessage(ChatColor.RED + messages.Message_Arguments);
-    			logToFile("[" + date() + "] [" + sender.getName() + "] " + messages.Message_Arguments);
-    		}
-        }
-    	else if(arg1.equalsIgnoreCase("GoldIngotPrice")) {
-    		try {
-    			arg2 = arg2.replaceAll(",", ".");
-    			if(Double.parseDouble(arg2) > 0) {
-    				config.GoldIngotPrice = Double.parseDouble(arg2);
-    				String message = messages.Message_ConfigChanged.replaceAll("/arg1/", "GoldIngotPrice");
-    				message = message.replaceAll("/arg2/", arg2);
-    				sender.sendMessage(message);
-    				logToFile("[" + date() + "] [" + sender.getName() + "] " + message);
-    			}
-    			else {
-    				sender.sendMessage(ChatColor.RED + messages.Message_Arguments);
-        			logToFile("[" + date() + "] [" + sender.getName() + "] " + messages.Message_Arguments);
-    			}
-    		}
-    		catch(Exception ex) {
-    			sender.sendMessage(ChatColor.RED + messages.Message_Arguments);
-    			logToFile("[" + date() + "] [" + sender.getName() + "] " + messages.Message_Arguments);
-    		}
-        }
-    	else if(arg1.equalsIgnoreCase("DiamondPrice")) {
-    		try {
-    			arg2 = arg2.replaceAll(",", ".");
-    			if(Double.parseDouble(arg2) > 0) {
-    				config.DiamondPrice = Double.parseDouble(arg2);
-    				String message = messages.Message_ConfigChanged.replaceAll("/arg1/", "DiamondPrice");
-    				message = message.replaceAll("/arg2/", arg2);
-    				sender.sendMessage(message);
-    				logToFile("[" + date() + "] [" + sender.getName() + "] " + message);
-    			}
-    			else {
-    				sender.sendMessage(ChatColor.RED + messages.Message_Arguments);
-        			logToFile("[" + date() + "] [" + sender.getName() + "] " + messages.Message_Arguments);
-    			}
-    		}
-    		catch(Exception ex) {
-    			sender.sendMessage(ChatColor.RED + messages.Message_Arguments);
-    			logToFile("[" + date() + "] [" + sender.getName() + "] " + messages.Message_Arguments);
-    		}
-        }
-    	else if(arg1.equalsIgnoreCase("EmeraldPrice")) {
-    		try {
-    			arg2 = arg2.replaceAll(",", ".");
-    			if(Double.parseDouble(arg2) > 0) {
-    				config.EmeraldPrice = Double.parseDouble(arg2);
-    				String message = messages.Message_ConfigChanged.replaceAll("/arg1/", "EmeraldPrice");
-    				message = message.replaceAll("/arg2/", arg2);
-    				sender.sendMessage(message);
-    				logToFile("[" + date() + "] [" + sender.getName() + "] " + message);
-    			}
-    			else {
-    				sender.sendMessage(ChatColor.RED + messages.Message_Arguments);
-        			logToFile("[" + date() + "] [" + sender.getName() + "] " + messages.Message_Arguments);
-    			}
-    		}
-    		catch(Exception ex) {
-    			sender.sendMessage(ChatColor.RED + messages.Message_Arguments);
-    			logToFile("[" + date() + "] [" + sender.getName() + "] " + messages.Message_Arguments);
-    		}
-        }
     	else {
     		sender.sendMessage(ChatColor.RED + messages.Message_Arguments);
 			logToFile("[" + date() + "] [" + sender.getName() + "] " + messages.Message_Arguments);
@@ -766,16 +464,30 @@ public class GoldToCashPlugin extends JavaPlugin implements Listener {
             	Sign s = (Sign)b.getState();
             	String[] lines = s.getLines().clone();
             	String prefix = arrayToString(lines);
-    			ItemStack hand = player.getItemInHand();
-    			if(prefix.startsWith(config.SignHeaderGoldToCash)) {
-	        		if(config.ConversionMethod.toUpperCase().contains("SIGN")) {
-		        		convertToCash(player, hand);
+        		if(config.ConversionMethod.toUpperCase().contains("SIGN")) {
+        			if(prefix.toUpperCase().startsWith(config.SignHeaderGoldToCash.toUpperCase())) {
+	        			Double result = config.Prices.get("" + player.getItemInHand().getTypeId());
+			    	    try {
+			    	    	if(!(result.equals(null))) {
+			        			convertToCash(player, player.getItemInHand());
+			    	    	}
+			    	    	else {
+			    	    		String message = messages.Message_ConvertItem.replaceAll("/moneyname/", economy.currencyNamePlural());
+			            		player.sendMessage(ChatColor.RED + message);
+			    				logToFile("[" + date() + "] [" + player.getName() + "] " + message);
+			    	    	}
+			    	    }
+			    	    catch(NullPointerException ex) {
+			    	    	String message = messages.Message_ConvertItem.replaceAll("/moneyname/", economy.currencyNamePlural());
+		            		player.sendMessage(ChatColor.RED + message);
+		    				logToFile("[" + date() + "] [" + player.getName() + "] " + message);
+			    	    }
 	            	}
-	        		else {
-	        			player.sendMessage(ChatColor.RED + messages.Message_MethodDisabled);
-	        			logToFile("[" + date() + "] [" + player.getName() + "] " + messages.Message_MethodDisabled);
-	        		}
     			}
+        		else {
+        			player.sendMessage(ChatColor.RED + messages.Message_MethodDisabled);
+        			logToFile("[" + date() + "] [" + player.getName() + "] " + messages.Message_MethodDisabled);
+        		}
             }
         }
     }
@@ -789,17 +501,31 @@ public class GoldToCashPlugin extends JavaPlugin implements Listener {
 		return arrayToString;
     }
 	
-	public boolean onCommand(final CommandSender sender, Command cmd, String label, String[] args){
+	public boolean onCommand(final CommandSender sender, Command cmd, String label, String[] args) {
         Player player = null;
         if(sender instanceof Player) {
             player = (Player) sender;
         }
-
+        
         if(cmd.getName().equalsIgnoreCase("goldtocash")) {
         	if(sender instanceof Player) {
         		if(config.ConversionMethod.toUpperCase().contains("COMMAND")) {
-        			ItemStack hand = player.getItemInHand();
-        			convertToCash(player, hand);
+        			Double result = config.Prices.get("" + player.getItemInHand().getTypeId());
+		    	    try {
+		    	    	if(!(result.equals(null))) {
+		        			convertToCash(player, player.getItemInHand());
+		    	    	}
+		    	    	else {
+		    	    		String message = messages.Message_ConvertItem.replaceAll("/moneyname/", economy.currencyNamePlural());
+		            		sender.sendMessage(ChatColor.RED + message);
+		    				logToFile("[" + date() + "] [" + player.getName() + "] " + message);
+		    	    	}
+		    	    }
+		    	    catch(NullPointerException ex) {
+		    	    	String message = messages.Message_ConvertItem.replaceAll("/moneyname/", economy.currencyNamePlural());
+	            		sender.sendMessage(ChatColor.RED + message);
+	    				logToFile("[" + date() + "] [" + player.getName() + "] " + message);
+		    	    }
         		}
         		else {
         			sender.sendMessage(ChatColor.RED + messages.Message_MethodDisabled);
@@ -811,30 +537,26 @@ public class GoldToCashPlugin extends JavaPlugin implements Listener {
         		logToFile("[" + date() + "] [CONSOLE] " + messages.Message_NoConsole);
         	}
         }
-        
         if(cmd.getName().equalsIgnoreCase("cashtogold")) {
         	if(sender instanceof Player) {
         		if(config.ConversionMethod.toUpperCase().contains("COMMAND")) {
-	        		if(!(args.length < 1)) {
-        				String arguments;
-        				arguments = Arrays.toString(args).substring(1,  Arrays.toString(args).length() - 1);
-        				arguments = arguments.replaceAll(",", "");
-	        			if(arguments.equalsIgnoreCase("Emerald")) {
-	        				convertToGold(player, emerald);
-	        			}
-	        			else if(arguments.equalsIgnoreCase("Diamond")) {
-	        				convertToGold(player, diamond);
-	        			}
-	        			else if(arguments.equalsIgnoreCase("Gold Ingot") || arguments.equalsIgnoreCase("GoldIngot") || arguments.toUpperCase().contains("GOLD")) {
-	        				convertToGold(player, goldIngot);
-	        			}
-	        			else if(arguments.equalsIgnoreCase("Iron Ingot") || arguments.equalsIgnoreCase("IronIngot") || arguments.toUpperCase().contains("IRON")) {
-	        				convertToGold(player, ironIngot);
-	        			}
-	        			else {
-	            			player.sendMessage(ChatColor.RED + messages.Message_Arguments);
-	            			logToFile("[" + date() + "] [" + player.getName() + "] " + messages.Message_Arguments);
-	            		}
+	        		if(args.length == 1) {
+	        			Double result = config.Prices.get(args[0]);
+			    	    try {
+			    	    	if(!(result.equals(null))) {
+			    	    		convertToGold(player, new ItemStack(Integer.parseInt(args[0])));
+			    	    	}
+			    	    	else {
+			    	    		String message = messages.Message_ConvertMoney.replaceAll("/moneyname/", economy.currencyNamePlural());
+			            		sender.sendMessage(ChatColor.RED + message);
+			    				logToFile("[" + date() + "] [" + player.getName() + "] " + message);
+			    	    	}
+			    	    }
+			    	    catch(NullPointerException ex) {
+			    	    	String message = messages.Message_ConvertMoney.replaceAll("/moneyname/", economy.currencyNamePlural());
+		            		sender.sendMessage(ChatColor.RED + message);
+		    				logToFile("[" + date() + "] [" + player.getName() + "] " + message);
+			    	    }
 	        		}
 	        		else {
 	        			player.sendMessage(ChatColor.RED + messages.Message_Arguments);
@@ -851,7 +573,6 @@ public class GoldToCashPlugin extends JavaPlugin implements Listener {
         		logToFile("[" + date() + "] [CONSOLE] " + messages.Message_NoConsole);
         	}
         }
-        
         if(cmd.getName().equalsIgnoreCase("goldtocashconfig")) {
         	if(sender instanceof Player) {
         		if(player.hasPermission("goldtocash.config")) {
@@ -859,9 +580,7 @@ public class GoldToCashPlugin extends JavaPlugin implements Listener {
         				String arguments;
         				arguments = Arrays.toString(args).substring(1,  Arrays.toString(args).length() - 1);
         				arguments = arguments.replaceAll(",", "");
-        				String arg1 = args[0];
-        				String arg2 = args[1];
-        				config(sender, arg1, arg2, arguments);
+        				config(sender, args[0], args[1], arguments);
         			}
         			else {
         				player.sendMessage(ChatColor.RED + messages.Message_Arguments);
@@ -878,17 +597,76 @@ public class GoldToCashPlugin extends JavaPlugin implements Listener {
     				String arguments;
     				arguments = Arrays.toString(args).substring(1,  Arrays.toString(args).length() - 1);
     				arguments = arguments.replaceAll(",", "");
-    				String arg1 = args[0];
-    				String arg2 = args[1];
-    				config(sender, arg1, arg2, arguments);
+    				config(sender, args[0], args[1], arguments);
     			}
     			else {
-    				sender.sendMessage(ChatColor.RED + messages.Message_Arguments);
+    				sender.sendMessage(ChatColor.RED + "[GoldToCash] " + messages.Message_Arguments);
     				logToFile("[" + date() + "] [CONSOLE] " + messages.Message_Arguments);
     			}
         	}
         }
-        
+    	if(cmd.getName().equalsIgnoreCase("price")) {
+    		if(sender instanceof Player) {
+        		if(player.hasPermission("goldtocash.price")) {
+        			if(args.length == 1) {
+        	    		Double result = config.Prices.get(args[0]);
+			    	    try {
+			    	    	if(!(result.equals(null))) {
+			    	    		String message = messages.Message_Price.replaceAll("/item/", args[0]);
+			    	    		message = message.replaceAll("/price/", "" + result);
+			    	    		sender.sendMessage(message);
+			    	    		logToFile("[" + date() + "] [" + player.getName() + "] " + message);
+			    	    	}
+			    	    	else {
+			    	    		String message = messages.Message_ConvertItem.replaceAll("/moneyname/", economy.currencyNamePlural());
+			            		sender.sendMessage(ChatColor.RED + message);
+			    				logToFile("[" + date() + "] [" + player.getName() + "] " + message);
+			    	    	}
+			    	    }
+			    	    catch(NullPointerException ex) {
+			    	    	String message = messages.Message_ConvertItem.replaceAll("/moneyname/", economy.currencyNamePlural());
+		            		sender.sendMessage(ChatColor.RED + message);
+		    				logToFile("[" + date() + "] [" + player.getName() + "] " + message);
+			    	    }
+	        		}
+        			else {
+        				sender.sendMessage(ChatColor.RED + messages.Message_Arguments);
+        				logToFile("[" + date() + "] [" + player.getName() + "] " + messages.Message_Arguments);
+        			}
+        		}
+	        	else {
+	        		player.sendMessage(ChatColor.RED + messages.Message_Permission);
+	                logToFile("[" + date() + "] [" + player.getName() + "] " + messages.Message_Permission);
+	        	}
+    		}
+    		else {
+    			if(args.length == 1) {
+    	    		Double result = config.Prices.get(args[0]);
+	    			try {
+	    				if(!(result.equals(null))) {
+		    				String message = messages.Message_Price.replaceAll("/item/", args[0]);
+			    	    	message = message.replaceAll("/price/", "" + result);
+		            		sender.sendMessage("[GoldToCash] " + message);
+		    				logToFile("[" + date() + "] [CONSOLE] " + message);
+	    				}
+		    	    	else {
+		    	    		String message = messages.Message_ConvertItem.replaceAll("/moneyname/", economy.currencyNamePlural());
+		            		sender.sendMessage(ChatColor.RED + message);
+		    				logToFile("[" + date() + "] [CONSOLE] " + message);
+		    	    	}
+		    	    }
+		    	    catch(NullPointerException ex) {
+		    	    	String message = messages.Message_ConvertItem.replaceAll("/moneyname/", economy.currencyNamePlural());
+	            		sender.sendMessage(ChatColor.RED + "[GoldToCash] " + message);
+	    				logToFile("[" + date() + "] [CONSOLE] " + message);
+		    	    }
+    			}
+    			else {
+    				sender.sendMessage(ChatColor.RED + "[GoldToCash] " + messages.Message_Arguments);
+    				logToFile("[" + date() + "] [CONSOLE] " + messages.Message_Arguments);
+    			}
+    		}
+    	}
         return true;
     }
 

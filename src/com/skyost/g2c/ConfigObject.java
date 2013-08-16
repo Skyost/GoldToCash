@@ -1,4 +1,4 @@
-package com.skyost.server;
+package com.skyost.g2c;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
