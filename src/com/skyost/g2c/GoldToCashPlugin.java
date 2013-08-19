@@ -68,6 +68,7 @@ import org.bukkit.plugin.java.JavaPlugin;
 
 import net.milkbowl.vault.economy.Economy;
 
+import com.skyost.economy.EconomyPlugin;
 import com.skyost.economy.api.Skyoconomy;
 import com.skyost.g2c.Metrics.Graph;
 
@@ -157,8 +158,7 @@ public class GoldToCashPlugin extends JavaPlugin implements Listener {
 	
 	public boolean loadSkyoconomy() {
 	    if(this.getServer().getPluginManager().getPlugin("Skyoconomy") != null) {
-	    	skyoconomy = new Skyoconomy();
-	    	skyoconomy.initialize();
+	    	skyoconomy = EconomyPlugin.economy;
 	    	return true;
 	    }
 	    else {

@@ -16,7 +16,7 @@
 name: GoldToCash
 main: com.skyost.g2c.GoldToCashPlugin
 description: Convert ingots into cash.
-version: 2.1
+version: 2.2
 softdepend: [Vault, Skyoconomy]
 author: Skyost
 website: http://dev.bukkit.org/bukkit-plugins/goldtocash

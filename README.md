@@ -1,4 +1,4 @@
-GoldToCash - by Skyost.
+.:GoldToCash - by Skyost:.
 ==========
 
-http://dev.bukkit.org/bukkit-plugins/goldtocash/
+http://dev.bukkit.org/bukkit-plugins/goldtocash/.
