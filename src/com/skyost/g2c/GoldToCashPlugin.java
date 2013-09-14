@@ -314,7 +314,8 @@ public class GoldToCashPlugin extends JavaPlugin implements Listener {
 		}
 	}
     
-    public void convertToCash(Player player, ItemStack inHand) {
+    @SuppressWarnings("deprecation")
+	public void convertToCash(Player player, ItemStack inHand) {
         if(player.hasPermission("goldtocash.convert.goldtocash")) {
         	if(isVault) {
 	        	if(vaultEconomy.isEnabled() == true) {
@@ -370,7 +371,8 @@ public class GoldToCashPlugin extends JavaPlugin implements Listener {
         }
     }
     
-    public void convertToGold(Player player, ItemStack toConvert) {
+    @SuppressWarnings("deprecation")
+	public void convertToGold(Player player, ItemStack toConvert) {
         if(player.hasPermission("goldtocash.convert.cashtogold")) {
         	if(isVault) {
 	        	if(vaultEconomy.isEnabled() == true) {
@@ -528,7 +530,8 @@ public class GoldToCashPlugin extends JavaPlugin implements Listener {
         }
     }
     
-    @EventHandler
+    @SuppressWarnings("deprecation")
+	@EventHandler
     public void onPlayerInteract(PlayerInteractEvent e) {
     	Player player = e.getPlayer();
         if(e.getAction() == Action.RIGHT_CLICK_BLOCK) {
@@ -586,6 +589,7 @@ public class GoldToCashPlugin extends JavaPlugin implements Listener {
 		return arrayToString;
     }
 	
+	@SuppressWarnings("deprecation")
 	public boolean onCommand(final CommandSender sender, Command cmd, String label, String[] args) {
         Player player = null;
         if(sender instanceof Player) {
